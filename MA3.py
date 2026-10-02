@@ -80,7 +80,7 @@ def sphere_volume_parallel(n, d, np=10):
     # np is the number of processes
     processes = []
     for _ in range(np):
-        p = mp.Process(target=sphere_volume_numba, args=[n,d])
+        p = mp.Process(target=sphere_volume, args=[n,d])
         processes.append(p)
     for p in processes:
         p.start()
