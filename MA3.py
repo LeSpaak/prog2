@@ -15,7 +15,7 @@ from time import perf_counter as pc
 import numpy as np
 import functools
 from numba import njit
-import multiprocessing as mp
+#import multiprocessing as mp
 
 # Exc1
 def approximate_pi(n):
@@ -52,7 +52,7 @@ def sphere_volume(n, d):
     # n is the number of points
     all_lst = [[random.uniform(-1,1) for _ in range(d)] for _ in range(n)]
     # d is the number of dimensions of the sphere 
-    f = lambda point :sum(list(map(lambda x : x**2, point))) <= 1
+    f = lambda point : sum(list(map(lambda x : x**2, point))) <= 1 
     red_lst = list(filter(f , all_lst) )
     return len(red_lst)/len(all_lst) * 2**d
 
@@ -78,27 +78,31 @@ def sphere_volume_parallel(n, d, np=10):
     # n is the number of points
     # d is the number of dimensions of the sphere
     # np is the number of processes
-    processes = []
-    for _ in range(np):
-        p = mp.Process(target=sphere_volume, args=[n,d])
-        processes.append(p)
-    for p in processes:
-        p.start()
-    for p in processes:
-        p.join()
-    return 
+    with future.ProcessPoolExecutor() as ex:
+        n_iter = [n//np for _ in range(np)]
+        d_iter = [d for _ in range(np)]
+
+        results = list(ex.map(sphere_volume, n_iter, d_iter))
+        svar = sum(results)/len(results)
+    return svar
     
 def main():
     # Exc1
+    print(f'Exc1')
     dots = [1000, 10000, 100000]
     for n in dots:
         approximate_pi(n)
 
     # Exc2
+    print(f'Exc2')
     n = 100000
     d = 2
-    sphere_volume(n, d)
     print(f"Actual volume of {d} dimentional sphere = {hypersphere_exact(n,d)}")
+    print(f"Approximate volume of {d} dimentional sphere = {sphere_volume(n,d)}")
+    d = 11
+    print(f"Actual volume of {d} dimentional sphere = {hypersphere_exact(n,d)}")
+    print(f"Approximate volume of {d} dimentional sphere = {sphere_volume(n,d)}")
+
 
     n = 100000
     d = 11
